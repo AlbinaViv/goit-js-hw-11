@@ -11,6 +11,7 @@ export async function getPhoto(currentPage, query) {
         return data;
         
     } catch (error) {
+        console.log(error.message);
         
     }
 }
