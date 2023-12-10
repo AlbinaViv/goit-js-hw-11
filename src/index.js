@@ -49,7 +49,6 @@ async function sendForm(evt) {
   // getPhoto(currentPage, currentQuery).then(responce =>
   //   createMarkup(responce.hits)
   // );
-
   try {
     const { totalHits, hits } = await getPhoto(currentPage, currentQuery);
 
