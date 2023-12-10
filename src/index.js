@@ -1,12 +1,15 @@
 import SimpleLightbox from "simplelightbox";
 import "simplelightbox/dist/simple-lightbox.min.css";
-
+import Notiflix from 'notiflix';
 import { getPhoto } from "./api";
 
 
 const form = document.querySelector('.search-form');
 const btn = document.querySelector('button');
 const photoCard = document.querySelector('.gallery');
+const load = document.querySelector('.load-btn');
+
+ load.style.display = 'none';
 
 
 const lightbox = new SimpleLightbox('.gallery a', {
@@ -14,21 +17,70 @@ const lightbox = new SimpleLightbox('.gallery a', {
     captionDelay: 250,
     captionPosition: 'bottom',
 });
-  
-let page = 1;
+ 
+let currentPage = 1;
+let maxPages;
+let firstSearch = true;
+
 let currentQuery = "";
 
 form.addEventListener('submit', sendForm);
 
-function sendForm(evt) {
-    evt.preventDefault();
-    page = 1;
-    photoCard.innerHTML = '';
-  currentQuery = evt.currentTarget.searchQuery.value;
+// function sendForm(evt) {
+//     evt.preventDefault();
+//     page = 1;
+//     photoCard.innerHTML = '';
+//   currentQuery = evt.currentTarget.searchQuery.value;
   
 
-   getPhoto(page, currentQuery).then(responce => createMarkup(responce.hits));
+//    getPhoto(page, currentQuery).then(responce => createMarkup(responce.hits));
  
+// }
+
+async function sendForm(evt) {
+  evt.preventDefault();
+
+  // load.style.display = 'none';
+  currentPage = 1;
+
+  photoCard.innerHTML = '';
+
+ lightbox.refresh();
+
+  currentQuery = evt.currentTarget.searchQuery.value;
+  
+  getPhoto(currentPage, currentQuery).then(responce => createMarkup(responce.hits));
+
+  try {
+    const { totalHits, hits } = await getPhoto(currentQuery, currentPage);
+
+    Notiflix.Loading.remove();
+
+    maxPages = Math.ceil(totalHits / 40);
+
+    if (totalHits === 0 || currentQuery.trim() === '') {
+      Notify.warning('Please, fill the main field');
+    return;
+      // Notiflix.Notify.warning(
+      //   'Sorry, there are no images matching your search query. Please try again.'
+      // );
+    } else {
+      gallery.insertAdjacentHTML('beforeend', createMarkup(hits));
+      if (!firstSearch) {
+        Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
+      }
+      lightbox.refresh();
+
+      if (currentPage < maxPages) {
+        load.style.display = '';
+      }
+    }
+  } catch (error) {
+    Notiflix.Loading.remove();
+
+    Notiflix.Notify.failure(error.message);
+  }
+  firstSearch = false;
 }
 
 function createMarkup(data) {
@@ -51,4 +103,35 @@ function createMarkup(data) {
     
   lightbox.refresh(); // оновлюе слухачів на зоображе
   
+}
+
+load.addEventListener('click', loadMore);
+
+
+
+async function loadMore(evt) {
+  evt.preventDefault();
+  currentPage += 1;
+
+  if (currentPage > maxPages) {
+    load.style.display = 'none';
+    Notiflix.Notify.warning(
+      "We're sorry, but you've reached the end of search results."
+    );
+  } else {
+    Notiflix.Loading.circle('Searching...');
+    try {
+      const images = await getPhoto(searchQuery, currentPage);
+
+      Notiflix.Loading.remove();
+
+      gallery.insertAdjacentHTML('beforeend', createMarkup(images.hits));
+
+      lightbox.refresh();
+    } catch (error) {
+      Notiflix.Loading.remove();
+
+      Notiflix.Notify.failure(error.message);
+    }
+  }
 }
