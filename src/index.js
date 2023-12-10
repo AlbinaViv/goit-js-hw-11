@@ -9,7 +9,6 @@ const btn = document.querySelector('button');
 const photoCard = document.querySelector('.gallery');
 const load = document.querySelector('.load-btn');
 
- load.style.display = 'none';
 
 
 const lightbox = new SimpleLightbox('.gallery a', {
@@ -21,49 +20,42 @@ const lightbox = new SimpleLightbox('.gallery a', {
 let currentPage = 1;
 let maxPages;
 let firstSearch = true;
+let searchQuery = "";
 
-let currentQuery = "";
+load.style.display = 'none';
+
 
 form.addEventListener('submit', sendForm);
 
-// function sendForm(evt) {
-//     evt.preventDefault();
-//     page = 1;
-//     photoCard.innerHTML = '';
-//   currentQuery = evt.currentTarget.searchQuery.value;
-  
-
-//    getPhoto(page, currentQuery).then(responce => createMarkup(responce.hits));
- 
-// }
 
 async function sendForm(evt) {
   evt.preventDefault();
 
-  // load.style.display = 'none';
-  currentPage = 1;
+ load.style.display = 'none';
 
   photoCard.innerHTML = '';
 
  lightbox.refresh();
 
-  currentQuery = evt.currentTarget.searchQuery.value;
+  searchQuery = form.elements.searchQuery.value;
+  currentPage = 1;
   
-  getPhoto(currentPage, currentQuery).then(responce => createMarkup(responce.hits));
+ Notiflix.Loading.arrows('Loading...');
+
+  
+  // getPhoto(searchQuery, currentPage).then(responce => createMarkup(responce.hits));
 
   try {
-    const { totalHits, hits } = await getPhoto(currentQuery, currentPage);
+    const { totalHits, hits } = await getPhoto(searchQuery, currentPage);
 
     Notiflix.Loading.remove();
 
     maxPages = Math.ceil(totalHits / 40);
 
-    if (totalHits === 0 || currentQuery.trim() === '') {
-      Notify.warning('Please, fill the main field');
-    return;
-      // Notiflix.Notify.warning(
-      //   'Sorry, there are no images matching your search query. Please try again.'
-      // );
+    if (totalHits === 0 || searchQuery.trim() === '') {
+      Notiflix.Notify.warning(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
     } else {
       gallery.insertAdjacentHTML('beforeend', createMarkup(hits));
       if (!firstSearch) {
@@ -83,9 +75,9 @@ async function sendForm(evt) {
   firstSearch = false;
 }
 
-function createMarkup(data) {
+function createMarkup(images) {
     
-  const photosArray = data.map(
+  const photosArray = images.map(
     ({
       webformatURL,
       largeImageURL,
@@ -114,7 +106,7 @@ async function loadMore(evt) {
   currentPage += 1;
 
   if (currentPage > maxPages) {
-    load.style.display = 'none';
+   load.style.display = 'none';
     Notiflix.Notify.warning(
       "We're sorry, but you've reached the end of search results."
     );
