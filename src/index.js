@@ -8,6 +8,7 @@ const form = document.querySelector('.search-form');
 const btn = document.querySelector('button');
 const photoCard = document.querySelector('.gallery');
 
+
 const lightbox = new SimpleLightbox('.gallery a', {
     captionsData: 'alt',
     captionDelay: 250,
@@ -23,14 +24,12 @@ function sendForm(evt) {
     evt.preventDefault();
     page = 1;
     photoCard.innerHTML = '';
-    currentQuery = evt.currentTarget.searchQuery.value;
+  currentQuery = evt.currentTarget.searchQuery.value;
+  
 
    getPhoto(page, currentQuery).then(responce => createMarkup(responce.hits));
  
 }
-
-
-
 
 function createMarkup(data) {
     
