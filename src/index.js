@@ -63,7 +63,7 @@ async function sendForm(evt) {
       //   'Sorry, there are no images matching your search query. Please try again.'
       // );
     } else {
-      gallery.insertAdjacentHTML('beforeend', createMarkup(hits));
+      gallery.insertAdjacentHTML('beforeend', createMarkup(hits).join(''));
       //if (!firstSearch) {
       Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
       //}
@@ -121,7 +121,7 @@ async function loadMore(evt) {
 
       Notiflix.Loading.remove();
 
-      gallery.insertAdjacentHTML('beforeend', createMarkup(images.hits));
+      gallery.insertAdjacentHTML('beforeend', createMarkup(images.hits).join(''));
 
       lightbox.refresh();
     } catch (error) {
